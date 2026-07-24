@@ -1,0 +1,271 @@
+{
+  "studyMetadata": {
+    "studyId": "rs3",
+    "title": "Rare Neurodegenerative Genomic Biomarkers",
+    "researcher": "Dr. Priya Nair",
+    "institution": "Mayo Clinic Research",
+    "completedDate": "2026-03-20",
+    "participatingInstitutions": [
+      "Mayo Clinic Research",
+      "Stanford Med Center",
+      "Johns Hopkins Medical"
+    ],
+    "totalSamples": 1204,
+    "privacyBudget": "ε=0.3, δ=1e-5"
+  },
+  "privacyGuarantees": {
+    "mechanism": "Laplace Differential Privacy",
+    "epsilonValue": 0.3,
+    "deltaValue": 0.00001,
+    "noiseCalibration": "Sensitivity-based with gradient clipping",
+    "kAnonymity": 5,
+    "lDiversity": 3
+  },
+  "statisticalSummary": {
+    "modelPerformance": {
+      "auc": 0.87,
+      "accuracy": 0.84,
+      "precision": 0.82,
+      "recall": 0.79,
+      "f1Score": 0.805
+    },
+    "cohortStatistics": {
+      "totalParticipants": 1204,
+      "averageAge": "62.4 ± 8.3 years",
+      "genderDistribution": {
+        "male": 578,
+        "female": 621,
+        "other": 5
+      },
+      "ethnicityDiversity": 0.76
+    },
+    "qualityMetrics": {
+      "sequencingDepth": "125X mean coverage",
+      "coverageUniformity": 0.94,
+      "variantCallQuality": 0.96
+    }
+  },
+  "genomicVariants": [
+    {
+      "variantId": "VAR_001",
+      "rsId": "rs80357713",
+      "chromosome": "chr14",
+      "position": "73,638,311",
+      "gene": "PSEN1",
+      "proteinChange": "p.Ala246Glu",
+      "impact": "High",
+      "clinicalSignificance": "Pathogenic",
+      "alleleFrequency": 0.0042,
+      "oddsRatio": 3.42,
+      "confidenceInterval": "2.89-4.05",
+      "pValue": "1.3e-12",
+      "privacyNoiseApplied": true
+    },
+    {
+      "variantId": "VAR_002",
+      "rsId": "rs63750066",
+      "chromosome": "chr21",
+      "position": "25,891,796",
+      "gene": "APP",
+      "proteinChange": "p.Val717Ile",
+      "impact": "High",
+      "clinicalSignificance": "Pathogenic",
+      "alleleFrequency": 0.0038,
+      "oddsRatio": 2.89,
+      "confidenceInterval": "2.41-3.47",
+      "pValue": "2.7e-10",
+      "privacyNoiseApplied": true
+    },
+    {
+      "variantId": "VAR_003",
+      "rsId": "rs104893877",
+      "chromosome": "chr17",
+      "position": "46,048,540",
+      "gene": "MAPT",
+      "proteinChange": "p.Pro301Leu",
+      "impact": "Moderate",
+      "clinicalSignificance": "Likely Pathogenic",
+      "alleleFrequency": 0.0056,
+      "oddsRatio": 1.95,
+      "confidenceInterval": "1.62-2.35",
+      "pValue": "4.2e-7",
+      "privacyNoiseApplied": true
+    },
+    {
+      "variantId": "VAR_004",
+      "rsId": "rs113993960",
+      "chromosome": "chr4",
+      "position": "89,724,099",
+      "gene": "SNCA",
+      "proteinChange": "p.Ala53Thr",
+      "impact": "Modifier",
+      "clinicalSignificance": "Uncertain Significance",
+      "alleleFrequency": 0.0089,
+      "oddsRatio": 1.12,
+      "confidenceInterval": "0.94-1.34",
+      "pValue": "0.047",
+      "privacyNoiseApplied": true
+    },
+    {
+      "variantId": "VAR_005",
+      "rsId": "rs63751039",
+      "chromosome": "chr14",
+      "position": "73,681,963",
+      "gene": "PSEN1",
+      "proteinChange": "p.Met146Leu",
+      "impact": "High",
+      "clinicalSignificance": "Pathogenic",
+      "alleleFrequency": 0.0034,
+      "oddsRatio": 3.18,
+      "confidenceInterval": "2.67-3.78",
+      "pValue": "8.9e-11",
+      "privacyNoiseApplied": true
+    },
+    {
+      "variantId": "VAR_006",
+      "rsId": "rs121908231",
+      "chromosome": "chr14",
+      "position": "73,674,327",
+      "gene": "PSEN1",
+      "proteinChange": "p.Ile143Thr",
+      "impact": "High",
+      "clinicalSignificance": "Pathogenic",
+      "alleleFrequency": 0.0029,
+      "oddsRatio": 2.76,
+      "confidenceInterval": "2.23-3.41",
+      "pValue": "3.4e-9",
+      "privacyNoiseApplied": true
+    },
+    {
+      "variantId": "VAR_007",
+      "rsId": "rs63750424",
+      "chromosome": "chr1",
+      "position": "227,076,621",
+      "gene": "PSEN2",
+      "proteinChange": "p.Asn141Ile",
+      "impact": "Moderate",
+      "clinicalSignificance": "Likely Pathogenic",
+      "alleleFrequency": 0.0067,
+      "oddsRatio": 1.84,
+      "confidenceInterval": "1.51-2.24",
+      "pValue": "1.1e-6",
+      "privacyNoiseApplied": true
+    },
+    {
+      "variantId": "VAR_008",
+      "rsId": "rs121918389",
+      "chromosome": "chr17",
+      "position": "46,052,687",
+      "gene": "MAPT",
+      "proteinChange": "p.Arg406Trp",
+      "impact": "Moderate",
+      "clinicalSignificance": "Likely Pathogenic",
+      "alleleFrequency": 0.0051,
+      "oddsRatio": 1.67,
+      "confidenceInterval": "1.38-2.03",
+      "pValue": "8.5e-6",
+      "privacyNoiseApplied": true
+    }
+  ],
+  "pathwayAnalysis": [
+    {
+      "pathwayId": "KEGG:05010",
+      "pathwayName": "Alzheimer Disease Pathway",
+      "genesInvolved": [
+        "APP",
+        "PSEN1",
+        "PSEN2",
+        "MAPT",
+        "APOE"
+      ],
+      "enrichmentScore": 4.73,
+      "adjustedPValue": "1.2e-8",
+      "biologicalProcess": "Amyloid-beta processing and tau phosphorylation"
+    },
+    {
+      "pathwayId": "GO:0006915",
+      "pathwayName": "Apoptotic Process Regulation",
+      "genesInvolved": [
+        "PSEN1",
+        "APP",
+        "MAPT"
+      ],
+      "enrichmentScore": 3.42,
+      "adjustedPValue": "5.6e-6",
+      "biologicalProcess": "Programmed cell death in neural tissue"
+    },
+    {
+      "pathwayId": "GO:0007215",
+      "pathwayName": "Glutamate Receptor Signaling",
+      "genesInvolved": [
+        "SNCA",
+        "PSEN1",
+        "APP"
+      ],
+      "enrichmentScore": 2.98,
+      "adjustedPValue": "2.3e-5",
+      "biologicalProcess": "Excitatory synaptic transmission"
+    },
+    {
+      "pathwayId": "REACTOME:R-HSA-5674404",
+      "pathwayName": "GABA Receptor Activation",
+      "genesInvolved": [
+        "MAPT",
+        "PSEN2"
+      ],
+      "enrichmentScore": 2.31,
+      "adjustedPValue": "0.00042",
+      "biologicalProcess": "Inhibitory neurotransmission"
+    }
+  ],
+  "institutionalContributions": [
+    {
+      "institutionId": "h2",
+      "institutionName": "Mayo Clinic Research",
+      "samplesContributed": 487,
+      "dataTypes": [
+        "Whole Genome Sequencing",
+        "RNA-Seq",
+        "Neurology Records"
+      ],
+      "privacyBudgetUsed": 0.12,
+      "computeContribution": 0.38
+    },
+    {
+      "institutionId": "h3",
+      "institutionName": "Stanford Med Center",
+      "samplesContributed": 412,
+      "dataTypes": [
+        "Single Cell Genomics",
+        "Spatial Transcriptomics",
+        "Oncology Records"
+      ],
+      "privacyBudgetUsed": 0.09,
+      "computeContribution": 0.35
+    },
+    {
+      "institutionId": "h1",
+      "institutionName": "Johns Hopkins Medical",
+      "samplesContributed": 305,
+      "dataTypes": [
+        "Whole Exome Sequencing",
+        "Targeted Panels",
+        "Clinical Outcomes"
+      ],
+      "privacyBudgetUsed": 0.09,
+      "computeContribution": 0.27
+    }
+  ],
+  "exportMetadata": {
+    "exportedBy": "Dr. Priya Nair",
+    "exportDate": "2026-03-26",
+    "dataVersion": "v2.4.1",
+    "privacyCompliance": [
+      "HIPAA",
+      "GDPR",
+      "NIH Genomic Data Sharing Policy",
+      "ISO 27001"
+    ],
+    "intendedUse": "Scientific publication and regulatory submission"
+  }
+}
