@@ -50,7 +50,9 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
     } else {
       setShowWeightsPanel(true);
       if (pythonBackendActive) {
-        fetch('http://127.0.0.1:8000/api/fl/model-inspect')
+        fetch('http://127.0.0.1:8000/api/fl/model-inspect', {
+          headers: { 'Authorization': 'Bearer researcher-token-secret' }
+        })
           .then(res => res.json())
           .then(data => setInspectedWeights(data))
           .catch(err => console.error(err));
@@ -76,7 +78,10 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
     if (pythonBackendActive) {
       fetch('http://127.0.0.1:8000/api/fl/predict', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer researcher-token-secret'
+        },
         body: JSON.stringify(testGenomicProfile)
       })
         .then(res => res.json())
@@ -98,7 +103,10 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
           try {
             const res = await fetch('http://127.0.0.1:8000/api/fl/run-round', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer researcher-token-secret'
+              },
               body: JSON.stringify({ epsilon_step: 0.1, study_id: study.id })
             });
             const pyData = await res.json();
@@ -153,7 +161,10 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
     setInspectedWeights(null);
     setInferenceResult(null);
     if (pythonBackendActive) {
-      fetch('http://127.0.0.1:8000/api/fl/reset', { method: 'POST' }).catch(() => {});
+      fetch('http://127.0.0.1:8000/api/fl/reset', { 
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer researcher-token-secret' }
+      }).catch(() => {});
     }
   };
 
