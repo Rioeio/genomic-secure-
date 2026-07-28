@@ -46,7 +46,29 @@ GenomicSecure coordinates four specialized autonomous agents across institutiona
 
 ---
 
-## 3. Biological Data Sources & Genomic Specifications
+## 3. Real Gradient Descent Training & Data Engine (Task 1)
+
+Unlike naive simulations, GenomicSecure executes **real local gradient descent optimization** and evaluates model metrics against held-out validation and test sets:
+
+* **Documented Synthetic Dataset (`backend/dataset.py`)**: Generates multi-locus variant dosage features (`rs1799966`, `rs80357711`, `rs7903146`, `rs429358`, `rs1042522`) with ground-truth odds ratios and balanced target labels. Shards data heterogeneously across hospital nodes (`Metro General`, `St. Jude`, `Apex Biobank`) with distinct training (`X_train`, `y_train`) and validation (`X_val`, `y_val`) splits, plus a global held-out test set (`X_test`, `y_test`).
+* **Local Hospital Optimization (`backend/hospital_client.py`)**: Local hospital workers compute gradient updates ($\mathbf{w} \leftarrow \mathbf{w} - \eta \nabla \mathcal{L}$) on their local shard, clip weight diffs ($\Delta \mathbf{w}$) to bound sensitivity ($C = 0.2$), and apply Laplace Differential Privacy noise.
+* **Server Aggregation & Metrics (`backend/server.py`)**: The central aggregator applies weighted FedAvg and evaluates loss and accuracy dynamically against real held-out predictions (`X_test`, `y_test`), eliminating all hardcoded formulas.
+* **Explicit Dataset Declaration**: All API responses and code modules explicitly declare `"dataset_type": "documented_synthetic"`.
+
+---
+
+## 4. API Security, Authentication & Role Checks (Task 2)
+
+All API endpoints are locked down against unauthorized access, raw model leakage, and cross-site requests:
+
+* **Token-Based Authentication**: All `/api/fl/*` routes require a Bearer token in the `Authorization` header (`Authorization: Bearer <token>`). Requests without valid tokens return `HTTP 401 Unauthorized`.
+* **Role-Based Access Control (RBAC)**: Gated `/api/fl/model-inspect` strictly behind the `researcher` role token (`researcher-token-secret`). Requests from non-researcher roles return `HTTP 403 Forbidden`.
+* **Strict CORS Whitelist**: Removed wildcard `allow_origins=["*"]`. Restricted allowed origins to explicit trusted URLs (`http://localhost:5173`, `http://127.0.0.1:5173`, `http://localhost:3000`). Preflight requests from unlisted domains are rejected.
+* **Rate Limiting**: Sliding-window rate limiting enforced on `/api/fl/run-round` and `/api/fl/predict`.
+
+---
+
+## 5. Biological Data Sources & Genomic Specifications
 
 GenomicSecure integrates human genomic variant datasets fetched from official open-source biological databases:
 
@@ -65,14 +87,14 @@ GenomicSecure integrates human genomic variant datasets fetched from official op
 
 ---
 
-## 4. How the Platform Functions as a Customizable Open-Source Shell
+## 6. How the Platform Functions as a Customizable Open-Source Shell
 
 GenomicSecure is designed as an extensible shell and framework. Organizations can clone, modify, and integrate their own infrastructure into the shell:
 
 ### Extending the Python Backend (`backend/`)
 * **Federated Algorithms (`backend/server.py`)**: Replace default FedAvg with FedProx, FedOpt, or Secure Multi-Party Computation (MPC).
 * **Differential Privacy Parameters (`backend/privacy_guard.py`)**: Customize Laplace or Gaussian noise scale factor calculations and set custom total $\epsilon$ budget limits.
-* **Custom Dataset Connectors (`backend/hospital_client.py`)**: Replace local simulated data loaders with real genomic file parsers (VCF, BAM, FASTQ) or Electronic Health Record (EHR) databases.
+* **Custom Dataset Connectors (`backend/hospital_client.py`)**: Replace local synthetic dataset loader with real genomic file parsers (VCF, BAM, FASTQ) or Electronic Health Record (EHR) databases.
 
 ### Extending the Web Interface (`src/`)
 * **Custom Institutional Branding**: Modify theme tokens and institutional node identifiers.
@@ -80,11 +102,11 @@ GenomicSecure is designed as an extensible shell and framework. Organizations ca
 
 ---
 
-## 5. System Execution & Operational Commands
+## 7. System Execution & Operational Commands
 
 ### Prerequisites
 * **Node.js**: Version 18.0 or higher
-* **Python**: Version 3.9 or higher with `fastapi`, `uvicorn`, `numpy`, and `pydantic` installed
+* **Python**: Version 3.9 or higher with `fastapi`, `uvicorn`, `numpy`, `pydantic`, `httpx` installed
 
 ---
 
@@ -128,29 +150,32 @@ cmd /c npm run dev
 
 ---
 
-## 6. API Endpoint Documentation
+## 8. API Endpoint Documentation
 
 The Python FastAPI backend exposes the following REST endpoints:
 
-* `GET /` — Health check, active node status, and privacy budget summary.
-* `GET /api/nodes` — Returns status and sample sizes of connected hospital nodes.
-* `POST /api/fl/run-round` — Triggers one round of FedAvg model training across hospital workers with Laplace DP noise.
-* `GET /api/fl/history` — Retrieves training metrics (loss, accuracy, privacy budget) across completed rounds.
-* `GET /api/fl/model-inspect` — Returns raw global PyTorch weight matrix tensors ($10 \times 64$ grid slice), mean weight, and standard deviation.
-* `POST /api/fl/predict` — Accepts a patient genomic variant vector and computes disease risk predictions via global model weights.
-* `GET /api/genomics/real-variants` — Serves GRCh38 genomic variant records.
+* `GET /` — Public health check, active node status, and dataset metadata.
+* `GET /api/fl/model-inspect` — Requires `Authorization: Bearer researcher-token-secret`. Returns global model weight matrix tensors ($10 \times 64$ grid slice), mean weight, and standard deviation.
+* `POST /api/fl/run-round` — Requires `Authorization: Bearer <token>`. Triggers one round of FedAvg model training across hospital workers with Laplace DP noise.
+* `POST /api/fl/predict` — Requires `Authorization: Bearer <token>`. Accepts a patient genomic variant vector and computes disease risk predictions via global model weights.
+* `GET /api/fl/history` — Requires `Authorization: Bearer <token>`. Retrieves training metrics (loss, accuracy, privacy budget) across completed rounds.
+* `POST /api/fl/reset` — Requires `Authorization: Bearer <token>`. Resets FL server aggregator instance.
+* `GET /api/genomics/real-variants` — Public endpoint serving GRCh38 genomic variant records.
 
 ---
 
-## 7. Project File Structure
+## 9. Project File Structure
 
 ```
 genomicsecure/
 ├── backend/                        # Python FastAPI & PyTorch Federated Engine
-│   ├── app.py                      # REST API endpoints (FL execution, model inspect, inference)
+│   ├── app.py                      # Authenticated REST API endpoints & security middleware
+│   ├── dataset.py                  # Documented synthetic genomic dataset generator & sharding
+│   ├── hospital_client.py          # Local Hospital Worker with real logistic gradient descent
+│   ├── privacy_guard.py            # Differential Privacy Laplace Noise engine
 │   ├── server.py                   # Federated Aggregator (FedAvg engine)
-│   ├── hospital_client.py          # Local Hospital Worker simulator
-│   └── privacy_guard.py            # Differential Privacy Laplace Noise engine
+│   ├── test_task1.py               # Automated verification suite for Task 1
+│   └── test_task2.py               # Automated security verification suite for Task 2
 ├── scripts/
 │   └── fetch_real_genomics.py      # Script to pull variants from Ensembl REST API
 ├── src/
@@ -166,6 +191,6 @@ genomicsecure/
 
 ---
 
-## 8. License
+## 10. License
 
 Distributed under the **MIT License**. Created by **Manoj**.
