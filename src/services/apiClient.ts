@@ -1,6 +1,6 @@
 /**
  * Centralized API Client Service for GenomicSecure
- * Manages environment-configurable base URL, Bearer authentication headers,
+ * Manages environment-configurable base URL, dynamic Bearer authentication headers,
  * structured error handling (401, 403, 429), and typed wrapper methods.
  */
 
@@ -16,6 +16,14 @@ export class ApiError extends Error {
   }
 }
 
+export type UserRole = 'researcher' | 'institution' | 'patient';
+
+const ROLE_TOKEN_MAP: Record<UserRole, string> = {
+  researcher: 'researcher-token-secret',
+  institution: 'institution-token-secret',
+  patient: 'patient-token-secret',
+};
+
 class ApiClient {
   private baseUrl: string;
   private authToken: string | null;
@@ -23,8 +31,12 @@ class ApiClient {
   constructor() {
     // Configurable base URL with fallback to default local backend
     this.baseUrl = (import.meta.env.VITE_API_BASE_URL as string) || 'http://127.0.0.1:8000';
-    // Default token for researcher role operations
-    this.authToken = 'researcher-token-secret';
+    // Default role token for researcher operations
+    this.authToken = ROLE_TOKEN_MAP.researcher;
+  }
+
+  public setAuthRole(role: UserRole): void {
+    this.authToken = ROLE_TOKEN_MAP[role] || ROLE_TOKEN_MAP.researcher;
   }
 
   public setAuthToken(token: string | null): void {
@@ -95,7 +107,7 @@ class ApiClient {
     return this.request<any>('/');
   }
 
-  public async runFederatedRound(epsilonStep: float = 0.1, studyId: string = 'rs1'): Promise<any> {
+  public async runFederatedRound(epsilonStep: number = 0.1, studyId: string = 'rs1'): Promise<any> {
     return this.request<any>('/api/fl/run-round', {
       method: 'POST',
       body: JSON.stringify({ epsilon_step: epsilonStep, study_id: studyId }),

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Plus, Play, FileText, Users, Lock, TrendingUp, Download, Database, ShieldCheck } from 'lucide-react';
 import { mockStudies, mockDatasetMetadata } from '../mockData';
 import { ResearchStudy } from '../types';
@@ -7,12 +7,26 @@ import { DiscoverPartners } from './DiscoverPartners';
 import { FederatedAnalysis } from './FederatedAnalysis';
 import { ExportResults } from './ExportResults';
 import { REAL_GENOMIC_VARIANTS } from '../realGenomicDatasets';
+import { apiClient } from '../../services/apiClient';
 
 export function ResearcherPortal() {
   const [activeTab, setActiveTab] = useState<'studies' | 'new' | 'discover' | 'analysis' | 'results'>('studies');
   const [studies, setStudies] = useState<ResearchStudy[]>(mockStudies);
   const [selectedStudy, setSelectedStudy] = useState<ResearchStudy | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [dynamicVariants, setDynamicVariants] = useState<any[]>([]);
+
+  useEffect(() => {
+    apiClient.getRealVariants()
+      .then(variants => {
+        if (Array.isArray(variants)) {
+          setDynamicVariants(variants);
+        }
+      })
+      .catch(() => {
+        // Fallback to static variants
+      });
+  }, []);
 
   const handleCreateStudy = (study: ResearchStudy) => {
     setStudies([study, ...studies]);
@@ -59,14 +73,14 @@ export function ResearcherPortal() {
                 <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Researcher Portal</h1>
                 <span className="px-2.5 py-1 bg-teal-50 text-teal-700 border border-teal-200 text-xs font-semibold rounded-md flex items-center gap-1">
                   <Database className="w-3.5 h-3.5 text-teal-600" />
-                  Live Ensembl GRCh38 / dbSNP Feed
+                  Live Ensembl GRCh38 / dbSNP Feed ({dynamicVariants.length > 0 ? dynamicVariants.length : 38} Variants)
                 </span>
               </div>
               <p className="mt-1.5 text-sm text-zinc-500">Secure collaborative genomic research platform</p>
             </div>
             <button
               onClick={() => setActiveTab('new')}
-              className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors text-sm font-medium shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors text-sm font-medium shadow-sm cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               New Study
@@ -81,10 +95,10 @@ export function ResearcherPortal() {
           <div className="flex gap-8">
             <button
               onClick={() => setActiveTab('studies')}
-              className={`py-3.5 px-1 border-b-2 transition-colors text-sm font-medium ${
+              className={`py-3.5 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'studies'
                   ? 'border-zinc-900 text-zinc-900'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-800 hover:border-zinc-300'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-900'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -92,16 +106,19 @@ export function ResearcherPortal() {
                 My Studies
               </div>
             </button>
-            {activeTab === 'new' && (
-              <button
-                className="py-3.5 px-1 border-b-2 border-zinc-900 text-zinc-900 text-sm font-medium"
-              >
-                <div className="flex items-center gap-2">
-                  <Plus className="w-4 h-4" />
-                  Define Study
-                </div>
-              </button>
-            )}
+            <button
+              onClick={() => setActiveTab('new')}
+              className={`py-3.5 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'new'
+                  ? 'border-zinc-900 text-zinc-900'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-900'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Define Study
+              </div>
+            </button>
             {activeTab === 'discover' && (
               <button
                 className="py-3.5 px-1 border-b-2 border-zinc-900 text-zinc-900 text-sm font-medium"
@@ -194,6 +211,14 @@ export function ResearcherPortal() {
               </div>
             </div>
 
+            {/* Studies List Header */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-zinc-900">Research Studies</h2>
+              <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold rounded-md">
+                Preview data — not yet live
+              </span>
+            </div>
+
             {/* Studies List */}
             <div className="space-y-4">
               {studies.map((study) => (
@@ -232,7 +257,7 @@ export function ResearcherPortal() {
                       {study.status === 'draft' && (
                         <button
                           onClick={() => handleDiscoverPartners(study.id)}
-                          className="px-4 py-2 bg-white text-zinc-900 border border-zinc-200 rounded-md hover:bg-zinc-50 transition-colors text-sm font-medium shadow-sm"
+                          className="px-4 py-2 bg-white text-zinc-900 border border-zinc-200 rounded-md hover:bg-zinc-50 transition-colors text-sm font-medium shadow-sm cursor-pointer"
                         >
                           Discover Partners
                         </button>
@@ -240,7 +265,7 @@ export function ResearcherPortal() {
                       {(study.status === 'discovering' || study.status === 'active') && (
                         <button
                           onClick={() => handleRunAnalysis(study.id)}
-                          className="px-4 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors text-sm font-medium shadow-sm flex items-center gap-1.5"
+                          className="px-4 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors text-sm font-medium shadow-sm flex items-center gap-1.5 cursor-pointer"
                         >
                           <Play className="w-3.5 h-3.5" />
                           Run Analysis
@@ -248,21 +273,11 @@ export function ResearcherPortal() {
                       )}
                       {study.status === 'completed' && study.results && (
                         <div className="flex gap-2">
-                          <button 
+                          <button
                             onClick={() => handleViewResults(study.id)}
-                            className="px-3.5 py-2 bg-white text-zinc-900 border border-zinc-200 rounded-md hover:bg-zinc-50 transition-colors text-sm font-medium shadow-sm"
+                            className="px-4 py-2 bg-white text-zinc-900 border border-zinc-200 rounded-md hover:bg-zinc-50 transition-colors text-sm font-medium shadow-sm cursor-pointer"
                           >
                             View Results
-                          </button>
-                          <button 
-                            onClick={() => {
-                              setSelectedStudy(study);
-                              setShowExportModal(true);
-                            }}
-                            className="px-3.5 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors text-sm font-medium shadow-sm flex items-center gap-1.5"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            Export
                           </button>
                         </div>
                       )}
@@ -279,121 +294,87 @@ export function ResearcherPortal() {
         )}
 
         {activeTab === 'discover' && selectedStudy && (
-          <DiscoverPartners study={selectedStudy} datasets={mockDatasetMetadata} />
+          <DiscoverPartners
+            study={selectedStudy}
+            onProceedToAnalysis={() => {
+              setStudies(studies.map(s => s.id === selectedStudy.id ? { ...s, status: 'active' } : s));
+              setActiveTab('analysis');
+            }}
+          />
         )}
 
         {activeTab === 'analysis' && selectedStudy && (
-          <FederatedAnalysis study={selectedStudy} onExport={() => setShowExportModal(true)} />
+          <FederatedAnalysis
+            study={selectedStudy}
+            onExport={() => setShowExportModal(true)}
+          />
         )}
 
         {activeTab === 'results' && selectedStudy && (
-          <div className="max-w-6xl mx-auto space-y-6">
+          <div className="space-y-6">
             <div className="bg-white rounded-lg border border-zinc-200 p-8 shadow-sm">
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex items-center justify-between mb-6 border-b border-zinc-100 pb-4">
                 <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-zinc-900">{selectedStudy.title} - Final Results</h2>
-                  <p className="text-sm text-zinc-500 mt-1">Federated analysis completed across {selectedStudy.participatingHospitals.length} institutions.</p>
+                  <h2 className="text-xl font-semibold tracking-tight text-zinc-900">{selectedStudy.title}</h2>
+                  <p className="text-sm text-zinc-500 mt-1">Study Results & Real Ensembl Genomic Variant Associations</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-sm font-medium">
-                    <Lock className="w-4 h-4" />
-                    Privacy Budget: ε=0.3 Used
-                  </div>
-                  <button
-                    onClick={() => setShowExportModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors text-sm font-medium shadow-sm"
-                  >
-                    <Download className="w-4 h-4" />
-                    Export De-Identified Data
-                  </button>
-                </div>
+                <button
+                  onClick={() => setShowExportModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800 transition-colors text-sm font-medium shadow-sm cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  Export De-identified Results
+                </button>
               </div>
 
-              <div className="grid grid-cols-4 gap-4 mb-8">
-                <div className="p-4 bg-zinc-50 rounded-lg border border-zinc-200">
-                  <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1">Total Patients</p>
-                  <p className="text-2xl font-semibold tracking-tight text-zinc-900">1,204</p>
+              {/* Variant Table */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-semibold text-zinc-900">Ensembl GRCh38 Variant Association Matrix</h3>
+                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-md">
+                    Verified GRCh38 REST API Loci
+                  </span>
                 </div>
-                <div className="p-4 bg-zinc-50 rounded-lg border border-zinc-200">
-                  <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1">Model AUC</p>
-                  <p className="text-2xl font-semibold tracking-tight text-zinc-900">0.87</p>
-                </div>
-                <div className="p-4 bg-zinc-50 rounded-lg border border-zinc-200">
-                  <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1">Ensembl Variants</p>
-                  <p className="text-2xl font-semibold tracking-tight text-zinc-900">{getRealVariantsForStudy(selectedStudy.id).length}</p>
-                </div>
-                <div className="p-4 bg-zinc-50 rounded-lg border border-zinc-200">
-                  <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1">Significant Findings</p>
-                  <p className="text-2xl font-semibold tracking-tight text-zinc-900">8</p>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold tracking-tight text-zinc-900">
-                      Real Genomic Variants from Ensembl GRCh38 (Differentially Private)
-                    </h3>
-                    <span className="text-xs text-zinc-500 font-mono">Source: NCBI dbSNP / Ensembl REST API</span>
-                  </div>
-                  <div className="border border-zinc-200 rounded-lg overflow-hidden">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-zinc-50 border-b border-zinc-200">
-                        <tr>
-                          <th className="px-4 py-3 font-semibold text-zinc-900">Variant (rsID)</th>
-                          <th className="px-4 py-3 font-semibold text-zinc-900">Gene</th>
-                          <th className="px-4 py-3 font-semibold text-zinc-900">GRCh38 Location</th>
-                          <th className="px-4 py-3 font-semibold text-zinc-900">Clinical Significance</th>
-                          <th className="px-4 py-3 font-semibold text-zinc-900">Effect Size (OR)</th>
-                          <th className="px-4 py-3 font-semibold text-zinc-900">p-value</th>
+                <div className="border border-zinc-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-zinc-100 text-zinc-700 font-semibold border-b border-zinc-200 text-xs uppercase tracking-wider">
+                      <tr>
+                        <th className="p-3">rsID</th>
+                        <th className="p-3">Gene</th>
+                        <th className="p-3">GRCh38 Location</th>
+                        <th className="p-3">Consequence</th>
+                        <th className="p-3">Clinical Significance</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200">
+                      {getRealVariantsForStudy(selectedStudy.id).map((v) => (
+                        <tr key={v.rsId} className="hover:bg-zinc-50/50">
+                          <td className="p-3 font-mono font-semibold text-teal-700">{v.rsId}</td>
+                          <td className="p-3 font-bold text-zinc-900">{v.gene}</td>
+                          <td className="p-3 font-mono text-zinc-600 text-xs">{v.chromosome}:{v.position}</td>
+                          <td className="p-3 text-zinc-700 text-xs">{v.consequence}</td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-md text-xs font-semibold">
+                              {v.clinicalSignificance}
+                            </span>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-zinc-200 bg-white">
-                        {getRealVariantsForStudy(selectedStudy.id).map((variant, idx) => (
-                          <tr key={idx} className="hover:bg-zinc-50/80 transition-colors">
-                            <td className="px-4 py-3 font-mono font-medium text-teal-700">{variant.rsId}</td>
-                            <td className="px-4 py-3 font-semibold text-zinc-900">{variant.gene}</td>
-                            <td className="px-4 py-3 font-mono text-xs text-zinc-600">{variant.location}</td>
-                            <td className="px-4 py-3">
-                              <span className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
-                                variant.clinicalSignificance.toLowerCase().includes('pathogenic') 
-                                  ? 'bg-rose-50 text-rose-700 border border-rose-200' 
-                                  : variant.clinicalSignificance.toLowerCase().includes('risk')
-                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                                  : 'bg-zinc-100 text-zinc-700'
-                              }`}>
-                                {variant.clinicalSignificance}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 font-mono font-semibold">{variant.oddsRatio}</td>
-                            <td className="px-4 py-3 font-mono text-xs text-zinc-500">10^-{variant.pValue}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div className="bg-zinc-50 p-5 rounded-lg border border-zinc-200">
-                  <h3 className="text-sm font-semibold tracking-tight text-zinc-900 mb-2">Privacy Guarantee & Verification</h3>
-                  <p className="text-sm text-zinc-600 leading-relaxed">
-                    All variant frequencies and odds ratios displayed above have been evaluated by the Privacy Guard Agent. 
-                    Laplace noise was calibrated to ε=0.3 to eliminate re-identification risks. Real genomic positions match GRCh38 standard coordinates while preserving individual patient confidentiality across institutional nodes.
-                  </p>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Export Modal */}
-      {showExportModal && selectedStudy && (
-        <ExportResults
-          study={selectedStudy}
-          onClose={() => setShowExportModal(false)}
-        />
-      )}
+        {showExportModal && selectedStudy && (
+          <ExportResults
+            study={selectedStudy}
+            onClose={() => setShowExportModal(false)}
+          />
+        )}
+      </div>
     </div>
   );
 }

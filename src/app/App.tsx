@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Microscope, Heart, Building2, LogOut, Cpu, ShieldCheck, UserCheck, Search, Database, X, Sparkles, CheckCircle2 } from 'lucide-react';
 import { ResearcherPortal } from './components/ResearcherPortal';
 import { PatientPortal } from './components/PatientPortal';
 import { InstitutionDashboard } from './components/InstitutionDashboard';
 import { LoginScreen } from './components/LoginScreen';
 import realGenomicVariants from './realGenomicDataset.json';
+import { apiClient } from '../services/apiClient';
 
 export type Portal = 'researcher' | 'patient' | 'institution';
 
@@ -12,6 +13,11 @@ export default function App() {
   const [activePortal, setActivePortal] = useState<Portal>('researcher');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
+
+  // Synchronize API client auth token dynamically with active portal role
+  useEffect(() => {
+    apiClient.setAuthRole(activePortal);
+  }, [activePortal]);
 
   const agentDetails = {
     fl: {

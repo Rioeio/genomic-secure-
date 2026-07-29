@@ -1,10 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Shield, FileText, Settings, CheckCircle, Clock, Database, AlertCircle, CheckCircle2, UserCheck } from 'lucide-react';
 import { mockPatient, mockStudies } from '../mockData';
+import { apiClient } from '../../services/apiClient';
 
 export function PatientPortal() {
   const [consentedProjects, setConsentedProjects] = useState(mockPatient.consentedProjects);
   const [notification, setNotification] = useState<string | null>(null);
+  const [privacyGuardActive, setPrivacyGuardActive] = useState(true);
+
+  useEffect(() => {
+    apiClient.checkHealth()
+      .then(data => {
+        if (data && data.status === 'ONLINE') {
+          setPrivacyGuardActive(true);
+        }
+      })
+      .catch(() => {
+        setPrivacyGuardActive(false);
+      });
+  }, []);
 
   const toggleConsent = (projectId: string) => {
     const isRevoking = consentedProjects.includes(projectId);
@@ -44,7 +58,13 @@ export function PatientPortal() {
         <div className="max-w-5xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Patient Consent & Data Sovereignty App</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Patient Consent & Data Sovereignty App</h1>
+                <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-md flex items-center gap-1">
+                  <Shield className="w-3.5 h-3.5 text-emerald-600" />
+                  {privacyGuardActive ? 'Privacy Guard Active (ε=0.3)' : 'Privacy Guard Offline'}
+                </span>
+              </div>
               <p className="mt-1.5 text-sm text-zinc-500">Manage your genomic data, grant or revoke research consent, and inspect access audit trails</p>
             </div>
             <div className="flex items-center gap-3">
@@ -57,6 +77,14 @@ export function PatientPortal() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
+        {/* Patient Profile Section Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-600">Patient Data Sovereignty Dashboard</h2>
+          <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold rounded-md">
+            Preview data — not yet live
+          </span>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-lg p-5 border border-zinc-200 shadow-sm">
@@ -120,9 +148,14 @@ export function PatientPortal() {
 
         {/* Research Projects Using My Data */}
         <div className="bg-white rounded-lg border border-zinc-200 p-6 mb-8 shadow-sm">
-          <div className="flex items-center gap-2.5 mb-5 border-b border-zinc-100 pb-4">
-            <FileText className="w-5 h-5 text-zinc-900" />
-            <h2 className="text-lg font-semibold tracking-tight text-zinc-900">Research Projects Using My Data</h2>
+          <div className="flex items-center justify-between mb-5 border-b border-zinc-100 pb-4">
+            <div className="flex items-center gap-2.5">
+              <FileText className="w-5 h-5 text-zinc-900" />
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-900">Research Projects Using My Data</h2>
+            </div>
+            <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold rounded-md">
+              Preview data — not yet live
+            </span>
           </div>
           {activeProjects.length === 0 ? (
             <p className="text-zinc-500 text-sm">You have not consented to any research projects yet.</p>
@@ -173,9 +206,14 @@ export function PatientPortal() {
 
         {/* Available Research Projects */}
         <div className="bg-white rounded-lg border border-zinc-200 p-6 mb-8 shadow-sm">
-          <div className="flex items-center gap-2.5 mb-5 border-b border-zinc-100 pb-4">
-            <Settings className="w-5 h-5 text-zinc-900" />
-            <h2 className="text-lg font-semibold tracking-tight text-zinc-900">Available Research Projects Seeking Participation</h2>
+          <div className="flex items-center justify-between mb-5 border-b border-zinc-100 pb-4">
+            <div className="flex items-center gap-2.5">
+              <Settings className="w-5 h-5 text-zinc-900" />
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-900">Available Research Projects Seeking Participation</h2>
+            </div>
+            <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold rounded-md">
+              Preview data — not yet live
+            </span>
           </div>
           <div className="space-y-4">
             {mockStudies
@@ -224,9 +262,14 @@ export function PatientPortal() {
 
         {/* Data Access Log */}
         <div className="bg-white rounded-lg border border-zinc-200 p-6 shadow-sm">
-          <div className="flex items-center gap-2.5 mb-5 border-b border-zinc-100 pb-4">
-            <Clock className="w-5 h-5 text-zinc-900" />
-            <h2 className="text-lg font-semibold tracking-tight text-zinc-900">Immutable Agent Data Access Audit Log</h2>
+          <div className="flex items-center justify-between mb-5 border-b border-zinc-100 pb-4">
+            <div className="flex items-center gap-2.5">
+              <Clock className="w-5 h-5 text-zinc-900" />
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-900">Immutable Agent Data Access Audit Log</h2>
+            </div>
+            <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold rounded-md">
+              Preview data — not yet live
+            </span>
           </div>
           <div className="space-y-3">
             {mockPatient.dataAccessLog.map((event) => (

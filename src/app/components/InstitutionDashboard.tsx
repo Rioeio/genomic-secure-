@@ -1,10 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Database, Users, TrendingUp, Shield, Activity, Award, Cpu, Lock, CheckCircle2, Server } from 'lucide-react';
 import { mockHospitals } from '../mockData';
+import { apiClient } from '../../services/apiClient';
 
 export function InstitutionDashboard() {
   const [selectedHospitalId, setSelectedHospitalId] = useState(mockHospitals[0].id);
+  const [backendOnline, setBackendOnline] = useState(false);
+  const [activeNodesCount, setActiveNodesCount] = useState(3);
   const hospital = mockHospitals.find(h => h.id === selectedHospitalId) || mockHospitals[0];
+
+  useEffect(() => {
+    apiClient.checkHealth()
+      .then(data => {
+        if (data && data.status === 'ONLINE') {
+          setBackendOnline(true);
+          if (data.active_nodes) {
+            setActiveNodesCount(data.active_nodes);
+          }
+        }
+      })
+      .catch(() => {
+        setBackendOnline(false);
+      });
+  }, []);
 
   return (
     <div className="flex-1 overflow-auto bg-zinc-50/50">
@@ -17,7 +35,7 @@ export function InstitutionDashboard() {
                 <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Hospital Institution Node Dashboard</h1>
                 <span className="px-2.5 py-0.5 bg-teal-50 text-teal-700 border border-teal-200 text-xs font-semibold rounded-md flex items-center gap-1">
                   <Server className="w-3.5 h-3.5 text-teal-600" />
-                  Confidential Enclave Active
+                  {backendOnline ? `Confidential Node Active (${activeNodesCount} Hospital Workers)` : 'Confidential Enclave Offline'}
                 </span>
               </div>
               <p className="text-sm text-zinc-500">Manage hospital node status, local data vaults, and Differential Privacy budget allocations</p>
@@ -44,6 +62,14 @@ export function InstitutionDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Key Metrics Header with Preview Badge */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-600">Institutional Vault Overview</h2>
+          <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold rounded-md">
+            Preview data — not yet live
+          </span>
+        </div>
+
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg p-5 border border-zinc-200 shadow-sm">
@@ -110,9 +136,14 @@ export function InstitutionDashboard() {
 
         {/* Data Contributions */}
         <div className="bg-white rounded-lg border border-zinc-200 p-6 mb-8 shadow-sm">
-          <div className="flex items-center gap-2.5 mb-5 border-b border-zinc-100 pb-4">
-            <Database className="w-5 h-5 text-zinc-900" />
-            <h2 className="text-lg font-semibold tracking-tight text-zinc-900">{hospital.name} — Data Vault Metrics</h2>
+          <div className="flex items-center justify-between mb-5 border-b border-zinc-100 pb-4">
+            <div className="flex items-center gap-2.5">
+              <Database className="w-5 h-5 text-zinc-900" />
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-900">{hospital.name} — Data Vault Metrics</h2>
+            </div>
+            <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold rounded-md">
+              Preview data — not yet live
+            </span>
           </div>
 
           <div className="space-y-4">
