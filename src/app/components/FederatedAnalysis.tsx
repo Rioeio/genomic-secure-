@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Play, Pause, Activity, Database, TrendingUp, Shield, Sparkles, Download, Terminal, Eye, Brain, CheckCircle2, ChevronUp, ChevronDown } from 'lucide-react';
 import { ResearchStudy } from '../types';
 import { ExportResults } from './ExportResults';
+import { apiClient } from '../../services/apiClient';
 
 interface FederatedAnalysisProps {
   study: ResearchStudy;
@@ -31,12 +32,11 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
 
   // Check Python FastAPI server status on mount
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/')
-      .then(res => res.json())
+    apiClient.checkHealth()
       .then(data => {
         if (data.status === 'ONLINE') {
           setPythonBackendActive(true);
-          setTrainingLogs(prev => ['[Python API] Connected to FastAPI PyTorch Federated Engine at http://127.0.0.1:8000', ...prev]);
+          setTrainingLogs(prev => [`[Python API] Connected to FastAPI PyTorch Federated Engine at ${apiClient.getBaseUrl()}`, ...prev]);
         }
       })
       .catch(() => {
@@ -50,10 +50,7 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
     } else {
       setShowWeightsPanel(true);
       if (pythonBackendActive) {
-        fetch('http://127.0.0.1:8000/api/fl/model-inspect', {
-          headers: { 'Authorization': 'Bearer researcher-token-secret' }
-        })
-          .then(res => res.json())
+        apiClient.inspectModelWeights()
           .then(data => setInspectedWeights(data))
           .catch(err => console.error(err));
       } else {
@@ -76,15 +73,7 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
 
   const runLiveInferenceTest = () => {
     if (pythonBackendActive) {
-      fetch('http://127.0.0.1:8000/api/fl/predict', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer researcher-token-secret'
-        },
-        body: JSON.stringify(testGenomicProfile)
-      })
-        .then(res => res.json())
+      apiClient.runModelInference(testGenomicProfile)
         .then(data => setInferenceResult(data))
         .catch(err => console.error(err));
     } else {
@@ -101,15 +90,7 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
       const timer = setTimeout(async () => {
         if (pythonBackendActive) {
           try {
-            const res = await fetch('http://127.0.0.1:8000/api/fl/run-round', {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer researcher-token-secret'
-              },
-              body: JSON.stringify({ epsilon_step: 0.1, study_id: study.id })
-            });
-            const pyData = await res.json();
+            const pyData = await apiClient.runFederatedRound(0.1, study.id);
             if (pyData.success) {
               const d = pyData.data;
               setIteration(d.round);
@@ -161,10 +142,7 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
     setInspectedWeights(null);
     setInferenceResult(null);
     if (pythonBackendActive) {
-      fetch('http://127.0.0.1:8000/api/fl/reset', { 
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer researcher-token-secret' }
-      }).catch(() => {});
+      apiClient.resetFLEngine().catch(() => {});
     }
   };
 
