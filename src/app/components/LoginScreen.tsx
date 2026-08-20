@@ -69,8 +69,8 @@ export const LoginScreen = ({
     <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="w-16 h-16 bg-zinc-900 text-white rounded-xl flex items-center justify-center shadow-lg mx-auto mb-6">
-            <Microscope className="w-8 h-8" />
+          <div className="w-16 h-16 bg-transparent flex items-center justify-center mx-auto mb-6">
+            <img src="/logo.png" alt="Med-Link Logo" className="w-16 h-16 object-contain drop-shadow-md" />
           </div>
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">Med-Link</h2>
           <p className="mt-2 text-sm text-zinc-500 font-medium tracking-wide uppercase">Privacy-Preserving Platform</p>

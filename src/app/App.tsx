@@ -97,8 +97,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-6 py-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-zinc-900 text-white rounded-lg flex items-center justify-center shadow-md">
-                <Microscope className="w-5 h-5 text-teal-400" />
+              <div className="w-10 h-10 bg-transparent flex items-center justify-center">
+                <img src="/logo.png" alt="Med-Link Logo" className="w-10 h-10 object-contain drop-shadow-sm" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
