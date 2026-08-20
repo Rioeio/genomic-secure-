@@ -2,9 +2,10 @@
 
 ## Pre-Demo Setup ✓
 
-- [ ] Application is loaded and running
-- [ ] Know the login credentials (use Dr. Priya Nair / Mayo Clinic)
-- [ ] Browser downloads folder is clear/organized
+- [ ] Know the login credentials:
+  - Researcher: `dr.smith@genome.edu` / `secure123`
+  - Patient: `alice.w@email.com` / `health123`
+  - Institution: `admin@mayoclinic.org` / `admin123`
 - [ ] Screen sharing is set up and tested
 - [ ] Have SAMPLE_EXPORT.json ready to show if needed
 
