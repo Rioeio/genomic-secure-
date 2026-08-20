@@ -267,3 +267,10 @@ if __name__ == "__main__":
     docx2_repo = os.path.join(repo_dir, "MedLink_Technical_Architecture_Report.docx")
     markdown_to_docx(md2, docx2_brain, "Med-Link: Technical Architecture Reference")
     markdown_to_docx(md2, docx2_repo, "Med-Link: Technical Architecture Reference")
+    
+    # 3. In-Depth Backend Architecture & API Guide
+    md3 = os.path.join(brain_dir, "backend_in_depth_report.md")
+    docx3_brain = os.path.join(brain_dir, "MedLink_Backend_InDepth_Report.docx")
+    docx3_repo = os.path.join(repo_dir, "MedLink_Backend_InDepth_Report.docx")
+    markdown_to_docx(md3, docx3_brain, "Med-Link: In-Depth Backend Architecture & API Guide")
+    markdown_to_docx(md3, docx3_repo, "Med-Link: In-Depth Backend Architecture & API Guide")
