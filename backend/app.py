@@ -162,18 +162,20 @@ def run_model_inference(req: PredictRequest, request: Request, user: dict = Depe
     Protected by token auth and rate limiting.
     """
     rate_limiter(request, max_requests=30, window_seconds=10)
-    profile = req.dict()
+    profile = req.model_dump()
     
     # 1. Monogenic high-penetrance analysis (BRCA1, TP53) - reported as discrete clinical findings
     monogenic_findings = evaluate_monogenic_findings(profile)
     has_pathogenic_monogenic = any(f["pathogenic_allele_present"] for f in monogenic_findings)
     
     # 2. Polygenic risk scoring (TCF7L2, APOE) - reported as population percentile
+    # PRS always uses published GWAS effect sizes, not FL classification weights.
+    # FL weights learn classification boundaries; PRS weights are fixed effect-size estimates.
     polygenic_features = np.array([req.rs7903146, req.rs429358])
-    poly_weights = fl_server.global_weights.flatten()[POLYGENIC_INDICES]
-    if np.all(poly_weights == 0):
-        # Default effect weights prior to FL round convergence
-        poly_weights = np.array([0.65, 0.85])
+    poly_weights = np.array([
+        GENOMIC_LOCI[2]["effect_weight"],  # TCF7L2: 0.65
+        GENOMIC_LOCI[3]["effect_weight"],  # APOE: 0.85
+    ])
         
     ref_dist = fl_server.reference_prs_distribution
     if len(ref_dist) == 0:

@@ -63,15 +63,16 @@ def test_3_data_driven_metrics():
 
 def test_4_explicit_dataset_declaration():
     """
-    Criterion 4: Response field explicitly states dataset_type ("documented_synthetic" or "real_public").
+    Criterion 4: Response field explicitly states dataset_type.
+    After Task 14, dataset is 'real_world_derived_benchmark' (upgraded from documented_synthetic).
     """
     server = FederatedServerAggregator(seed=42)
     res = server.execute_federated_round(epsilon_step=0.5)
     
     assert "dataset_type" in res, "dataset_type missing from round summary"
-    assert res["dataset_type"] == "documented_synthetic", f"Unexpected dataset_type: {res['dataset_type']}"
-    assert DATASET_TYPE == "documented_synthetic", "DATASET_TYPE global mismatch"
-    print(f"✅ Criterion 4 PASSED: Explicit dataset declaration present ('{res['dataset_type']}').")
+    assert res["dataset_type"] == DATASET_TYPE, f"Unexpected dataset_type: {res['dataset_type']}, expected {DATASET_TYPE}"
+    assert DATASET_TYPE in ("documented_synthetic", "real_world_derived_benchmark"), f"DATASET_TYPE not a recognized value: {DATASET_TYPE}"
+    print(f"PASS Criterion 4: Explicit dataset declaration present ('{res['dataset_type']}').")
 
 if __name__ == "__main__":
     print("--- Verifying Task 1 Acceptance Criteria ---")

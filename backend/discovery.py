@@ -103,7 +103,7 @@ class FederatedDiscoveryEngine:
         feasibility = "HIGH FEASIBILITY (Power >= 80%)" if overall_power >= 0.80 else ("MODERATE FEASIBILITY" if overall_power >= 0.50 else "UNDERPOWERED COHORT")
         
         return CohortDiscoveryResponse(
-            query_echo=query.dict(),
+            query_echo=query.model_dump(),
             total_matching_cohort_size=total_matching,
             total_screened_samples=total_screened,
             estimated_statistical_power=overall_power,

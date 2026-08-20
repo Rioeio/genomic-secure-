@@ -133,7 +133,7 @@ def run_benchmark_and_save_report(report_path: str = None) -> dict:
     y_test = shards["global_test"]["y_test"]
     
     print("Running Centralized Baseline Training on Pooled Patient Data (N=2,800)...")
-    central_res = train_centralized(X_pooled, y_pooled, X_test, y_test, epochs=30)
+    central_res = train_centralized(X_pooled, y_pooled, X_test, y_test, epochs=50)
     
     print("Running Med-Link Federated Learning across 3 Hospital Enclaves with Differential Privacy...")
     fed_res = train_federated(shards, rounds=5, epsilon_step=0.3)
