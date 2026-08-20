@@ -1,3 +1,39 @@
+export interface FHIRMolecularSequence {
+  resourceType: 'MolecularSequence';
+  id: string;
+  identifier: Array<{ system: string; value: string }>;
+  type: 'dna' | 'rna' | 'aa';
+  coordinateSystem: number;
+  referenceSeq: {
+    chromosome: { text: string };
+    genomeBuild: string;
+  };
+  variant: Array<{
+    start: number;
+    end: number;
+    observedAllele: string;
+    referenceAllele: string;
+  }>;
+}
+
+export interface OMOPGenomicMeasurement {
+  measurement_id: string;
+  person_id?: string;
+  measurement_concept_id: number;
+  measurement_concept_name: string;
+  measurement_source_value: string;
+  value_as_concept_id: number;
+  value_source_value: string;
+  gene_symbol: string;
+  chromosome: string;
+  position: number;
+  reference_allele: string;
+  alternate_allele: string;
+  odds_ratio?: number;
+  p_value?: number;
+  clinical_significance: string;
+}
+
 export interface RealGenomicVariant {
   rsId: string;
   gene: string;
@@ -6,12 +42,21 @@ export interface RealGenomicVariant {
   position: number;
   location: string;
   alleleString: string;
-  clinicalSignificance: 'Pathogenic' | 'Likely Pathogenic' | 'Uncertain Significance' | 'Likely Benign' | 'Benign' | 'Risk Factor';
-  minorAlleleFrequency: number;
-  oddsRatio: number;
-  pValue: number; // -log10(p-value) for GWAS Manhattan visualization
-  impact: 'High' | 'Moderate' | 'Modifier' | 'Low';
+  clinicalSignificance: 'Pathogenic' | 'Likely Pathogenic' | 'Uncertain Significance' | 'Likely Benign' | 'Benign' | 'Risk Factor' | string;
+  minorAlleleFrequency: number | null;
+  oddsRatio?: number | null;
+  pValue?: number | null; // -log10(p-value) for GWAS Manhattan visualization
+  impact?: 'High' | 'Moderate' | 'Modifier' | 'Low' | string;
   source: string;
+  fhir_representation?: FHIRMolecularSequence;
+  omop_representation?: OMOPGenomicMeasurement;
+}
+
+export interface GenomicVariantsResponse {
+  schema_version: string;
+  standards_compliance: string[];
+  total_variants: number;
+  variants: RealGenomicVariant[];
 }
 
 export interface RealCohortSample {

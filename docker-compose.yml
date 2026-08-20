@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # Central Federated Aggregator
+  medlink-aggregator:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medlink-aggregator
+    ports:
+      - "8000:8000"
+    environment:
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+      - MEDLINK_JWT_SECRET=production-secret-override-key-38472910
+      - MEDLINK_NODE_ROLE=aggregator
+    networks:
+      - medlink-network
+    restart: unless-stopped
+
+  # Isolated Hospital Node 1: Metro General Genomic Vault (EUR)
+  medlink-node-metro:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medlink-node-metro
+    environment:
+      - MEDLINK_NODE_ID=node-eur
+      - MEDLINK_HOSPITAL_NAME=Metro General Genomic Vault
+      - MEDLINK_POPULATION=EUR
+      - AGGREGATOR_URL=http://medlink-aggregator:8000
+    depends_on:
+      - medlink-aggregator
+    networks:
+      - medlink-network
+    restart: on-failure
+
+  # Isolated Hospital Node 2: St. Jude & Apollo Biobank (SAS)
+  medlink-node-stjude:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medlink-node-stjude
+    environment:
+      - MEDLINK_NODE_ID=node-sas
+      - MEDLINK_HOSPITAL_NAME=St. Jude & Apollo Biobank
+      - MEDLINK_POPULATION=SAS
+      - AGGREGATOR_URL=http://medlink-aggregator:8000
+    depends_on:
+      - medlink-aggregator
+    networks:
+      - medlink-network
+    restart: on-failure
+
+  # Isolated Hospital Node 3: Apex Precision Health Enclave (AFR)
+  medlink-node-apex:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medlink-node-apex
+    environment:
+      - MEDLINK_NODE_ID=node-afr
+      - MEDLINK_HOSPITAL_NAME=Apex Precision Health Enclave
+      - MEDLINK_POPULATION=AFR
+      - AGGREGATOR_URL=http://medlink-aggregator:8000
+    depends_on:
+      - medlink-aggregator
+    networks:
+      - medlink-network
+    restart: on-failure
+
+  # Web Frontend Dashboard
+  medlink-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medlink-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - medlink-aggregator
+    networks:
+      - medlink-network
+    restart: unless-stopped
+
+networks:
+  medlink-network:
+    driver: bridge

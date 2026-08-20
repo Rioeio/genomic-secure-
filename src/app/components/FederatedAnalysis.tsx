@@ -77,10 +77,17 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
         .then(data => setInferenceResult(data))
         .catch(err => console.error(err));
     } else {
-      const isHigh = testGenomicProfile.rs80357711 === 1 || testGenomicProfile.rs429358 === 2;
+      const hasBrca = testGenomicProfile.rs80357711 > 0;
+      const polyScore = (testGenomicProfile.rs7903146 * 0.65) + (testGenomicProfile.rs429358 * 0.85);
+      const prsPercentile = polyScore > 2.0 ? 88.5 : (polyScore > 1.0 ? 64.2 : 21.0);
       setInferenceResult({
-        model_confidence: isHigh ? 88.4 : 24.1,
-        disease_risk_prediction: isHigh ? 'HIGH RISK' : 'LOW RISK'
+        monogenic_findings: [
+          { gene: 'BRCA1', rsid: 'rs80357711', pathogenic_allele_present: hasBrca, clinical_interpretation: hasBrca ? 'POSITIVE: Pathogenic BRCA1 variant detected.' : 'NEGATIVE: No pathogenic BRCA1 variant.' },
+          { gene: 'TP53', rsid: 'rs1042522', pathogenic_allele_present: testGenomicProfile.rs1042522 > 0, clinical_interpretation: testGenomicProfile.rs1042522 > 0 ? 'POSITIVE: TP53 cancer risk modifier allele present.' : 'NEGATIVE: Wild-type TP53.' }
+        ],
+        monogenic_summary: hasBrca ? 'Pathogenic high-penetrance variant detected' : 'No high-penetrance pathogenic variants detected',
+        polygenic_risk_percentile: prsPercentile,
+        polygenic_risk_tier: prsPercentile >= 80 ? 'High Polygenic Risk (Top Quintile)' : (prsPercentile >= 50 ? 'Moderate Polygenic Risk' : 'Average Population Risk')
       });
     }
   };
@@ -373,14 +380,24 @@ export function FederatedAnalysis({ study, onExport }: FederatedAnalysisProps) {
               </button>
 
               {inferenceResult && (
-                <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-md border border-zinc-200 shadow-xs">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs text-zinc-500 font-medium">Prediction:</span>
-                    <span className={`text-xs font-bold ${
-                      inferenceResult.disease_risk_prediction === 'HIGH RISK' ? 'text-rose-600' : 'text-emerald-600'
+                <div className="flex flex-wrap items-center gap-3 bg-white px-4 py-2.5 rounded-md border border-zinc-200 shadow-xs">
+                  {/* Monogenic High Penetrance Finding */}
+                  <div className="flex items-center gap-2 pr-3 border-r border-zinc-200">
+                    <span className="text-[11px] text-zinc-500 font-medium">Monogenic:</span>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                      inferenceResult.monogenic_findings?.some((f: any) => f.pathogenic_allele_present)
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                     }`}>
-                      {inferenceResult.disease_risk_prediction} ({inferenceResult.model_confidence}%)
+                      {inferenceResult.monogenic_summary || 'Evaluated'}
+                    </span>
+                  </div>
+
+                  {/* Polygenic Risk Score Percentile */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-zinc-500 font-medium">Polygenic PRS:</span>
+                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                      {inferenceResult.polygenic_risk_percentile}th Percentile ({inferenceResult.polygenic_risk_tier || 'PRS Calculated'})
                     </span>
                   </div>
                 </div>

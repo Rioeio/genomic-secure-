@@ -1,4 +1,4 @@
-# GenomicSecure
+# Med-Link
 
 ## Privacy-Preserving Federated Genomic Research & Medical Data Transfer Platform
 
@@ -12,17 +12,17 @@ Medical research requires access to large-scale genomic and clinical health data
 
 This regulatory barrier creates isolated institutional data silos, leading to redundant research efforts, smaller sample sizes, and delayed medical breakthroughs.
 
-GenomicSecure addresses this challenge by providing an open-source federated learning shell. Instead of transferring raw genomic data to a central repository, researchers dispatch AI model architectures to participating hospital nodes. Local hospital servers train model weights on private datasets behind institutional firewalls and return differential privacy-preserved gradient updates. The platform aggregates these updates into a global model without exposing raw patient data.
+Med-Link addresses this challenge by providing an open-source federated learning shell. Instead of transferring raw genomic data to a central repository, researchers dispatch AI model architectures to participating hospital nodes. Local hospital servers train model weights on private datasets behind institutional firewalls and return differential privacy-preserved gradient updates. The platform aggregates these updates into a global model without exposing raw patient data.
 
 ---
 
 ## 2. Multi-Agent System Architecture
 
-GenomicSecure coordinates four specialized autonomous agents across institutional boundaries:
+Med-Link coordinates four specialized autonomous agents across institutional boundaries:
 
 ```
 +-----------------------------------------------------------------------------------+
-|                            GENOMICSECURE PLATFORM                                 |
+|                            MED-LINK PLATFORM                                 |
 +--------------------------+--------------------------+-----------------------------+
 |     RESEARCHER PORTAL    |    PATIENT CONSENT APP   |    INSTITUTION DASHBOARD    |
 | - Study Definition       | - My Genomic Records     | - Local Dataset Vault       |
@@ -48,7 +48,7 @@ GenomicSecure coordinates four specialized autonomous agents across institutiona
 
 ## 3. Real Gradient Descent Training & Data Engine (Task 1)
 
-Unlike naive simulations, GenomicSecure executes **real local gradient descent optimization** and evaluates model metrics against held-out validation and test sets:
+Unlike naive simulations, Med-Link executes **real local gradient descent optimization** and evaluates model metrics against held-out validation and test sets:
 
 * **Documented Synthetic Dataset (`backend/dataset.py`)**: Generates multi-locus variant dosage features (`rs1799966`, `rs80357711`, `rs7903146`, `rs429358`, `rs1042522`) with ground-truth odds ratios and balanced target labels. Shards data heterogeneously across hospital nodes (`Metro General`, `St. Jude`, `Apex Biobank`) with distinct training (`X_train`, `y_train`) and validation (`X_val`, `y_val`) splits, plus a global held-out test set (`X_test`, `y_test`).
 * **Local Hospital Optimization (`backend/hospital_client.py`)**: Local hospital workers compute gradient updates ($\mathbf{w} \leftarrow \mathbf{w} - \eta \nabla \mathcal{L}$) on their local shard, clip weight diffs ($\Delta \mathbf{w}$) to bound sensitivity ($C = 0.2$), and apply Laplace Differential Privacy noise.
@@ -70,7 +70,7 @@ All API endpoints are locked down against unauthorized access, raw model leakage
 
 ## 5. Biological Data Sources & Genomic Specifications
 
-GenomicSecure integrates human genomic variant datasets fetched from official open-source biological databases:
+Med-Link integrates human genomic variant datasets fetched from official open-source biological databases:
 
 * **Ensembl Human Genome Assembly (GRCh38)**: REST API integration for base-pair coordinates, chromosome locations, and reference/alternate allele sequences.
 * **NCBI dbSNP (Database of Single Nucleotide Polymorphisms)**: Reference SNP accession numbers (`rsIDs`) for major disease loci.
@@ -85,11 +85,22 @@ GenomicSecure integrates human genomic variant datasets fetched from official op
 | **Cardiovascular Risk** | `APOE`, `PCSK9`, `LDLR` | `rs429358`, `rs7412`, `rs11591147` | Chr 19 (`44,908,684`), Chr 1 (`55,039,984`) | Pathogenic / High Risk |
 | **Rare Diseases** | `CFTR`, `PSEN1`, `APP` | `rs113993960`, `rs80357713`, `rs63750066` | Chr 7 (`117,559,591`), Chr 14 (`73,173,740`) | Pathogenic Indels |
 
+### Ancestry Representation & Polygenic Risk Transferability (Task 15)
+
+Most published Polygenic Risk Score (PRS) models suffer from severe transferability loss because ~80% of historical GWAS participants are of European descent. Med-Link explicitly evaluates per-population model metrics across decentralized hospital nodes:
+
+* **Represented Cohorts (`backend/data/real_genomic_cohort.json`)**:
+  - **European Ancestry (`EUR`)**: Metro General Genomic Vault (N=1,000)
+  - **South Asian Ancestry (`SAS`)**: St. Jude & Apollo Biobank (N=800)
+  - **African Ancestry (`AFR`)**: Apex Precision Health Enclave (N=1,000)
+* **Per-Population Evaluation**: Each federated training round computes and returns distinct loss and balanced accuracy metrics per ancestry group rather than obscuring disparities inside a pooled global average.
+* **Current Limitations & Roadmap**: East Asian (`EAS`) and Admixed American (`AMR`) cohorts are not yet represented in local nodes and represent priority expansion targets for Phase 2 FHIR/OMOP federation. Full provenance and licensing are documented in [`DATASET_LICENSE.md`](file:///c:/genomicsecure/DATASET_LICENSE.md).
+
 ---
 
 ## 6. How the Platform Functions as a Customizable Open-Source Shell
 
-GenomicSecure is designed as an extensible shell and framework. Organizations can clone, modify, and integrate their own infrastructure into the shell:
+Med-Link is designed as an extensible shell and framework. Organizations can clone, modify, and integrate their own infrastructure into the shell:
 
 ### Extending the Python Backend (`backend/`)
 * **Federated Algorithms (`backend/server.py`)**: Replace default FedAvg with FedProx, FedOpt, or Secure Multi-Party Computation (MPC).

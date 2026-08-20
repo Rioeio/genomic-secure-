@@ -1,6 +1,6 @@
 /**
- * Centralized API Client Service for GenomicSecure
- * Manages environment-configurable base URL, dynamic Bearer authentication headers,
+ * Centralized API Client Service for Med-Link
+ * Manages environment-configurable base URL, dynamic JWT Bearer authentication,
  * structured error handling (401, 403, 429), and typed wrapper methods.
  */
 
@@ -18,11 +18,16 @@ export class ApiError extends Error {
 
 export type UserRole = 'researcher' | 'institution' | 'patient';
 
-const ROLE_TOKEN_MAP: Record<UserRole, string> = {
-  researcher: 'researcher-token-secret',
-  institution: 'institution-token-secret',
-  patient: 'patient-token-secret',
-};
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  user: {
+    email: string;
+    name: string;
+    role: string;
+  };
+}
 
 class ApiClient {
   private baseUrl: string;
@@ -31,12 +36,7 @@ class ApiClient {
   constructor() {
     // Configurable base URL with fallback to default local backend
     this.baseUrl = (import.meta.env.VITE_API_BASE_URL as string) || 'http://127.0.0.1:8000';
-    // Default role token for researcher operations
-    this.authToken = ROLE_TOKEN_MAP.researcher;
-  }
-
-  public setAuthRole(role: UserRole): void {
-    this.authToken = ROLE_TOKEN_MAP[role] || ROLE_TOKEN_MAP.researcher;
+    this.authToken = null;
   }
 
   public setAuthToken(token: string | null): void {
@@ -53,6 +53,10 @@ class ApiClient {
 
   public getBaseUrl(): string {
     return this.baseUrl;
+  }
+
+  public isAuthenticated(): boolean {
+    return this.authToken !== null && this.authToken.length > 0;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -80,7 +84,7 @@ class ApiClient {
       if (!response.ok) {
         let errorMessage = `HTTP Error ${response.status}: ${response.statusText}`;
         if (response.status === 401) {
-          errorMessage = 'Authentication required. Invalid or missing Bearer token.';
+          errorMessage = 'Authentication required. Please log in.';
         } else if (response.status === 403) {
           errorMessage = 'Access forbidden. Insufficient role permissions for this endpoint.';
         } else if (response.status === 429) {
@@ -99,6 +103,22 @@ class ApiClient {
       }
       throw new ApiError(0, error instanceof Error ? error.message : 'Network failure connecting to backend API');
     }
+  }
+
+  // --- Authentication ---
+
+  public async login(email: string, password: string): Promise<LoginResponse> {
+    const response = await this.request<LoginResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    // Store the JWT token from successful login
+    this.authToken = response.access_token;
+    return response;
+  }
+
+  public logout(): void {
+    this.authToken = null;
   }
 
   // --- Public API Methods ---
@@ -148,6 +168,20 @@ class ApiClient {
   public async getRealVariants(): Promise<any> {
     return this.request<any>('/api/genomics/real-variants', {
       method: 'GET',
+    });
+  }
+
+  public async queryCohortCount(query: {
+    gene?: string;
+    rsid?: string;
+    variant_class?: string;
+    clinical_significance?: string;
+    population_ancestry?: string;
+    min_dosage?: number;
+  }): Promise<any> {
+    return this.request<any>('/api/discovery/cohort-count', {
+      method: 'POST',
+      body: JSON.stringify(query),
     });
   }
 }

@@ -1,12 +1,12 @@
 @echo off
 echo ========================================================================
-echo          GENOMICSECURE - FEDERATED RESEARCH PLATFORM
+echo          MED-LINK - FEDERATED RESEARCH PLATFORM
 echo ========================================================================
 echo Starting Python FastAPI AI Backend & React Web Frontend simultaneously...
 echo.
 
 :: Start Python Backend in background
-start "GenomicSecure Python Backend (Port 8000)" cmd /k "cd /d C:\genomicsecure && python backend/app.py"
+start "Med-Link Python Backend (Port 8000)" cmd /k "cd /d C:\genomicsecure && python backend/app.py"
 
 :: Start React Frontend in main window
 cd /d C:\genomicsecure

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Microscope, Heart, Building2, Lock, ArrowRight, User } from 'lucide-react';
-import { Portal } from '../App'; // Wait, Portal type is defined in App.tsx
+import { Microscope, Heart, Building2, Lock, ArrowRight, User, AlertCircle } from 'lucide-react';
+import { Portal } from '../App';
+import { apiClient } from '../../services/apiClient';
 
 export const LoginScreen = ({ 
   onLogin,
@@ -13,9 +14,12 @@ export const LoginScreen = ({
 }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const credentials = {
+  // Demo credential hints — passwords are NOT stored here, only shown as UI hints.
+  // Actual validation happens server-side via /auth/login.
+  const demoHints = {
     researcher: [
       { name: 'Dr. Sarah Smith', user: 'dr.smith@genome.edu', pass: 'secure123' },
       { name: 'Dr. James Chen', user: 'j.chen@research.org', pass: 'secure123' }
@@ -30,24 +34,35 @@ export const LoginScreen = ({
     ]
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validUsers = credentials[activePortal];
-    const isValid = validUsers.some(creds => creds.user === username && creds.pass === password);
-    
-    if (isValid) {
-      setError(false);
-      onLogin(activePortal);
-    } else {
-      setError(true);
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await apiClient.login(username, password);
+      // JWT token is now stored in apiClient automatically
+      const userRole = response.user.role as 'researcher' | 'patient' | 'institution';
+      setActivePortal(userRole);
+      onLogin(userRole);
+    } catch (err: any) {
+      if (err.status === 401) {
+        setError('Invalid email or password. Please try again.');
+      } else if (err.status === 0) {
+        setError('Cannot reach the backend server. Is it running on port 8000?');
+      } else {
+        setError(err.message || 'Login failed. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Pre-fill credentials helper
+  // Pre-fill credentials helper (for demo convenience only)
   const preFill = (user: string, pass: string) => {
     setUsername(user);
     setPassword(pass);
-    setError(false);
+    setError('');
   };
 
   return (
@@ -57,14 +72,14 @@ export const LoginScreen = ({
           <div className="w-16 h-16 bg-zinc-900 text-white rounded-xl flex items-center justify-center shadow-lg mx-auto mb-6">
             <Microscope className="w-8 h-8" />
           </div>
-          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">GenomeSecure</h2>
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">Med-Link</h2>
           <p className="mt-2 text-sm text-zinc-500 font-medium tracking-wide uppercase">Privacy-Preserving Platform</p>
         </div>
 
         <div className="bg-white p-8 rounded-xl shadow-sm border border-zinc-200">
           <div className="flex p-1 bg-zinc-100 rounded-lg mb-8">
             <button
-              onClick={() => { setActivePortal('researcher'); setError(false); setUsername(''); setPassword(''); }}
+              onClick={() => { setActivePortal('researcher'); setError(''); setUsername(''); setPassword(''); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${
                 activePortal === 'researcher' ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900'
               }`}
@@ -73,7 +88,7 @@ export const LoginScreen = ({
               Researcher
             </button>
             <button
-              onClick={() => { setActivePortal('patient'); setError(false); setUsername(''); setPassword(''); }}
+              onClick={() => { setActivePortal('patient'); setError(''); setUsername(''); setPassword(''); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${
                 activePortal === 'patient' ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900'
               }`}
@@ -82,7 +97,7 @@ export const LoginScreen = ({
               Patient
             </button>
             <button
-              onClick={() => { setActivePortal('institution'); setError(false); setUsername(''); setPassword(''); }}
+              onClick={() => { setActivePortal('institution'); setError(''); setUsername(''); setPassword(''); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${
                 activePortal === 'institution' ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900'
               }`}
@@ -104,7 +119,7 @@ export const LoginScreen = ({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="block w-full pl-10 pr-3 py-2 border border-zinc-200 rounded-lg focus:ring-zinc-900 focus:border-zinc-900 sm:text-sm bg-zinc-50/50 transition-colors"
-                  placeholder={credentials[activePortal][0].user}
+                  placeholder={demoHints[activePortal][0].user}
                   required
                 />
               </div>
@@ -128,23 +143,35 @@ export const LoginScreen = ({
             </div>
 
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">
-                Invalid credentials. Please try again.
-              </p>
+              <div className="flex items-start gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">
+                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
             )}
 
             <button
               type="submit"
-              className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-zinc-900 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 transition-colors"
+              disabled={isLoading}
+              className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-zinc-900 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Authenticating...
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
 
           <div className="mt-8 border-t border-zinc-200 pt-6">
+            <p className="text-xs text-zinc-400 mb-3 font-medium uppercase tracking-wider">Demo Credentials</p>
             <div className="space-y-3">
-              {credentials[activePortal].map((cred, idx) => (
+              {demoHints[activePortal].map((cred, idx) => (
                 <div 
                   key={idx}
                   onClick={() => preFill(cred.user, cred.pass)}

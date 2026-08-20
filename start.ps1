@@ -1,5 +1,5 @@
 Write-Host "========================================================================" -ForegroundColor Cyan
-Write-Host "         GENOMICSECURE - FEDERATED RESEARCH PLATFORM" -ForegroundColor Cyan
+Write-Host "         MED-LINK - FEDERATED RESEARCH PLATFORM" -ForegroundColor Cyan
 Write-Host "========================================================================" -ForegroundColor Cyan
 Write-Host "Starting Python FastAPI AI Backend & React Web Frontend simultaneously..." -ForegroundColor Yellow
 

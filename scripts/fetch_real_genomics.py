@@ -16,7 +16,7 @@ GENES_TO_FETCH = [
 real_dataset = []
 
 headers = {
-  "User-Agent": "GenomicSecure/1.0 (Research Platform; Contact: manoj@saec.edu)"
+  "User-Agent": "Med-Link/1.0 (Research Platform; Contact: medlink-project@example.org)"
 }
 
 print("Fetching real genomic variant data from Ensembl REST API...")

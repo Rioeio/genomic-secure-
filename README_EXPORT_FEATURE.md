@@ -2,7 +2,7 @@
 
 > **For**: Round Two Evaluation Demo  
 > **Date**: March 26, 2026  
-> **Platform**: GenomeSecure - Multi-Agent Genomic Data Privacy Platform  
+> **Platform**: Med-Link - Multi-Agent Genomic Data Privacy Platform  
 > **Feature**: De-Identified Results Export System  
 
 ---
@@ -375,5 +375,5 @@ You've built something impressive. The jury will see:
 
 *Last Updated: March 26, 2026*  
 *Feature: De-Identified Genomic Results Export*  
-*Platform: GenomeSecure Multi-Agent Platform*  
+*Platform: Med-Link Multi-Agent Platform*  
 *Purpose: Round Two Evaluation Demo*

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Microscope, Heart, Building2, LogOut, Cpu, ShieldCheck, UserCheck, Search, Database, X, Sparkles, CheckCircle2 } from 'lucide-react';
 import { ResearcherPortal } from './components/ResearcherPortal';
 import { PatientPortal } from './components/PatientPortal';
@@ -11,13 +11,8 @@ export type Portal = 'researcher' | 'patient' | 'institution';
 
 export default function App() {
   const [activePortal, setActivePortal] = useState<Portal>('researcher');
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
-
-  // Synchronize API client auth token dynamically with active portal role
-  useEffect(() => {
-    apiClient.setAuthRole(activePortal);
-  }, [activePortal]);
 
   const agentDetails = {
     fl: {
@@ -107,7 +102,7 @@ export default function App() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold tracking-tight text-zinc-900">GenomicSecure</h1>
+                  <h1 className="text-xl font-bold tracking-tight text-zinc-900">Med-Link</h1>
                   <span className="px-2 py-0.5 bg-teal-50 text-teal-700 border border-teal-200 text-[10px] font-semibold uppercase tracking-wider rounded-full">
                     OPEN SOURCE FRAMEWORK
                   </span>
@@ -163,7 +158,7 @@ export default function App() {
 
               <div className="h-6 w-px bg-zinc-200"></div>
               <button
-                onClick={() => setIsAuthenticated(false)}
+                onClick={() => { apiClient.logout(); setIsAuthenticated(false); }}
                 className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
                 title="Log out"
               >
@@ -297,7 +292,7 @@ export default function App() {
       {/* Platform Footer */}
       <footer className="bg-white border-t border-zinc-200 text-xs text-zinc-500 py-4 px-6 mt-auto">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
-          <p>© 2026 GenomicSecure • Created by Manoj • Open-Source Federated Biomedical Framework</p>
+          <p>© 2026 Med-Link • Created by Manoj • Open-Source Federated Biomedical Framework</p>
           <div className="flex items-center gap-4">
             <span>Powered by PyTorch, Differential Privacy & Ensembl GRCh38 API</span>
             <a href="/realGenomicDataset.json" target="_blank" className="text-teal-600 hover:underline font-medium">
