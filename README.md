@@ -2,7 +2,7 @@
 
 ## Privacy-Preserving Federated Genomic Research & Medical Data Transfer Platform
 
-An open-source, multi-agent federated learning framework and application shell created by **Manoj** for secure biomedical collaboration, privacy-preserved genomic research, and confidential medical data exchange.
+An open-source, multi-agent federated learning framework and application shell created for secure biomedical collaboration, privacy-preserved genomic research, and confidential medical data exchange.
 
 ---
 
